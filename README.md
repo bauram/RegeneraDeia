@@ -66,3 +66,11 @@ enlazó en cada HTML. Los estados iniciales de las animaciones "appear" de Frame
 - URL clonada: https://www.regeneradeia.com
 - Fecha: 2026-08-12
 - Generado con el pipeline `clone-master`.
+
+
+## Animaciones (JS propio, local)
+Las animaciones de aparición al hacer scroll (fade + desplazamiento) se reproducen
+con `js/animations.js` (IntersectionObserver + red de seguridad), manteniendo el
+sitio 100% local. Los elementos animados están marcados con `data-appear`. Si el
+JS no cargara, un failsafe muestra todo el contenido igualmente. Respeta
+`prefers-reduced-motion`.
