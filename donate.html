@@ -2,9 +2,9 @@
 <html lang="en" data-redirect-timezone="1"><head>
 <script>document.documentElement.className+=" js-anim";window.__animOK=false;setTimeout(function(){if(!window.__animOK){document.documentElement.className=document.documentElement.className.replace(" js-anim","");}},2500);</script>
 <style id="anim-appear-css">
-html.js-anim [data-appear]{opacity:0 !important;transform:translateY(42px) !important;transition:opacity .85s cubic-bezier(.16,.72,.29,1),transform .85s cubic-bezier(.16,.72,.29,1) !important;will-change:opacity,transform;}
-html.js-anim [data-appear].anim-in{opacity:1 !important;transform:none !important;}
-@media (prefers-reduced-motion: reduce){html.js-anim [data-appear]{opacity:1 !important;transform:none !important;transition:none !important;}}
+html.js-anim [data-appear]{transition:opacity .8s cubic-bezier(.16,.72,.29,1),transform .8s cubic-bezier(.16,.72,.29,1);}
+html.js-anim [data-appear]:not(.anim-in){opacity:0 !important;transform:translateY(42px) !important;}
+@media (prefers-reduced-motion: reduce){html.js-anim [data-appear]:not(.anim-in){opacity:1 !important;transform:none !important;transition:none !important;}}
 </style>
 
 	<meta charset="utf-8">

@@ -1,57 +1,40 @@
-/* Reproducción ligera y local de las animaciones "appear" de Framer.
-   Los elementos [data-appear] arrancan ocultos (opacity:0 + translateY) y se
-   revelan al entrar en el viewport, imitando el fade/slide del sitio original.
-   Robustez: IntersectionObserver + red de seguridad por scroll, y failsafe
-   externo (en el <head>) que muestra todo si este script no llega a ejecutarse. */
+/* Animaciones "appear" locales (reproducción del efecto de Framer).
+   Oculta [data-appear] con CSS :not(.anim-in) y revela al entrar en viewport.
+   Robusto: scroll en captura (soporta contenedores de scroll anidados) + poll
+   de respaldo + failsafe externo en el <head>. Respeta prefers-reduced-motion. */
 (function () {
   window.__animOK = true;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function all() { return Array.prototype.slice.call(document.querySelectorAll('[data-appear]')); }
-  function revealAll() { all().forEach(function (el) { el.classList.add('anim-in'); }); }
-
+  function pending() { return Array.prototype.slice.call(document.querySelectorAll('[data-appear]:not(.anim-in)')); }
+  function revealAll() { document.querySelectorAll('[data-appear]').forEach(function (e) { e.classList.add('anim-in'); }); }
   if (reduce) { revealAll(); return; }
 
-  function run() {
-    var els = all();
-    // escalonado sutil entre hermanos que aparecen juntos
+  function start() {
+    // escalonado sutil entre hermanos
     var groups = new Map();
-    els.forEach(function (el) {
-      var p = el.parentElement || document.body;
-      var arr = groups.get(p) || []; arr.push(el); groups.set(p, arr);
+    document.querySelectorAll('[data-appear]').forEach(function (el) {
+      var p = el.parentElement || document.body; var a = groups.get(p) || []; a.push(el); groups.set(p, a);
     });
-    groups.forEach(function (arr) {
-      arr.forEach(function (el, i) { el.style.transitionDelay = Math.min(i * 70, 350) + 'ms'; });
-    });
+    groups.forEach(function (a) { a.forEach(function (el, i) { el.style.transitionDelay = Math.min(i * 70, 350) + 'ms'; }); });
 
-    function reveal(el) { el.classList.add('anim-in'); }
-
-    var io = null;
-    if ('IntersectionObserver' in window) {
-      io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) { if (e.isIntersecting) { reveal(e.target); io.unobserve(e.target); } });
-      }, { root: null, rootMargin: '0px 0px -6% 0px', threshold: 0 });
-      els.forEach(function (el) { io.observe(el); });
-    }
-
-    // Red de seguridad: cualquier elemento ya dentro (o por encima) del viewport se revela.
-    var ticking = false;
-    function sweep() {
-      ticking = false;
+    function tick() {
       var vh = window.innerHeight || document.documentElement.clientHeight;
-      all().forEach(function (el) {
-        if (el.classList.contains('anim-in')) return;
+      pending().forEach(function (el) {
         var r = el.getBoundingClientRect();
-        if (r.top < vh * 0.98 && r.bottom > 0) { reveal(el); if (io) io.unobserve(el); }
+        if (r.top < vh * 0.92 && r.bottom > 0) el.classList.add('anim-in');
       });
     }
-    function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(sweep); } }
-    window.addEventListener('scroll', onScroll, { passive: true });
+    var raf = false;
+    function onScroll() { if (!raf) { raf = true; requestAnimationFrame(function () { raf = false; tick(); }); } }
+    // capture:true => también recibe scroll de contenedores internos (no burbujea)
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true });
     window.addEventListener('resize', onScroll, { passive: true });
-    window.addEventListener('load', sweep);
-    sweep();
+    window.addEventListener('load', tick);
+    tick();
+    // poll de respaldo para scroll no estándar; se detiene al revelar todo
+    var poll = setInterval(function () { tick(); if (pending().length === 0) clearInterval(poll); }, 200);
+    setTimeout(function () { clearInterval(poll); }, 20000);
   }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
-  else run();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })();
