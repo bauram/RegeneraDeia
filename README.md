@@ -89,4 +89,5 @@ El clon de Framer solo trae la versión de escritorio y no tiene el runtime de F
   del boletín (alta en la lista «Regenera Deià» de Mailchimp; si falla la conexión, abre un correo a info@), y oculta el selector Mensual/Anual
   (solo existen los precios mensuales) y el indicador de «cargando» del blog.
 - `js/lang.js` — selector de idioma EN / CA.
+- `css/partners.css` — carrusel de socios (Donate, Fundraising; copia del de la home) y del equipo (About).
 `i18n/build.py` añade los tres scripts a todas las páginas.
