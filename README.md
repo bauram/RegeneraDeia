@@ -74,3 +74,9 @@ con `js/animations.js` (IntersectionObserver + red de seguridad), manteniendo el
 sitio 100% local. Los elementos animados están marcados con `data-appear`. Si el
 JS no cargara, un failsafe muestra todo el contenido igualmente. Respeta
 `prefers-reduced-motion`.
+
+## Versión en catalán (/ca/)
+- `ca/` se **genera**: no editar a mano. Las traducciones están en `i18n/ca.json` (inglés → catalán).
+- Tras cambiar una página en inglés: `python3 i18n/extract.py` (lista textos), traducir los nuevos en
+  `i18n/ca.json` y `python3 i18n/build.py` (regenera `ca/` y avisa de lo que falte por traducir).
+- El selector «English / Català» lo hace funcionar `js/lang.js` (cambia entre `/ruta` y `/ca/ruta`).
