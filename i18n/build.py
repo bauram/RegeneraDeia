@@ -11,11 +11,13 @@ def tr(t):
     return ca[t]
 
 ASSETS = r'(?:images|css|fonts|js)/'
-SCRIPT = '<script src="%sjs/lang.js" defer></script>'
+SCRIPTS = ('lang.js', 'menu.js', 'widgets.js')
 
 def add_script(s, prefix):
-    if 'js/lang.js' in s: return s
-    return s.replace('</body>', SCRIPT % prefix + '</body>', 1)
+    for name in SCRIPTS:
+        if 'js/' + name not in s:
+            s = s.replace('</body>', '<script src="%sjs/%s" defer></script></body>' % (prefix, name), 1)
+    return s
 
 for f in pages():
     rel = os.path.relpath(f, ROOT)

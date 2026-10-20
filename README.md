@@ -80,3 +80,13 @@ JS no cargara, un failsafe muestra todo el contenido igualmente. Respeta
 - Tras cambiar una página en inglés: `python3 i18n/extract.py` (lista textos), traducir los nuevos en
   `i18n/ca.json` y `python3 i18n/build.py` (regenera `ca/` y avisa de lo que falte por traducir).
 - El selector «English / Català» lo hace funcionar `js/lang.js` (cambia entre `/ruta` y `/ca/ruta`).
+
+## Arreglos sobre el clon (js/)
+El clon de Framer solo trae la versión de escritorio y no tiene el runtime de Framer. Lo suplen:
+- `js/menu.js` — diseño compacto (menú hamburguesa, pie apilado, tarjetas en una columna) por debajo
+  de 1024px o cuando la barra de escritorio no cabe (las etiquetas en catalán son más largas).
+- `js/widgets.js` — acordeón de preguntas frecuentes, barra de progreso de la captación, formulario
+  del boletín (de momento abre un correo a info@regeneradeia.com), y oculta el selector Mensual/Anual
+  (solo existen los precios mensuales) y el indicador de «cargando» del blog.
+- `js/lang.js` — selector de idioma EN / CA.
+`i18n/build.py` añade los tres scripts a todas las páginas.
