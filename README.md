@@ -86,7 +86,7 @@ El clon de Framer solo trae la versión de escritorio y no tiene el runtime de F
 - `js/menu.js` — diseño compacto (menú hamburguesa, pie apilado, tarjetas en una columna) por debajo
   de 1024px o cuando la barra de escritorio no cabe (las etiquetas en catalán son más largas).
 - `js/widgets.js` — acordeón de preguntas frecuentes, barra de progreso de la captación, formulario
-  del boletín (de momento abre un correo a info@regeneradeia.com), y oculta el selector Mensual/Anual
+  del boletín (alta en la lista «Regenera Deià» de Mailchimp; si falla la conexión, abre un correo a info@), y oculta el selector Mensual/Anual
   (solo existen los precios mensuales) y el indicador de «cargando» del blog.
 - `js/lang.js` — selector de idioma EN / CA.
 `i18n/build.py` añade los tres scripts a todas las páginas.

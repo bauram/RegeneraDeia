@@ -14,28 +14,83 @@
 })();
 
 /* Boletín: el formulario de Framer ya no envía a ningún sitio (recargaba la página con el email
-   en la URL). Mientras no haya una lista conectada, abre un correo a info@ con el alta. */
+   en la URL). Ahora da de alta en la lista «Regenera Deià» de Mailchimp (JSONP, sin servidor).
+   Si la conexión falla (p. ej. un bloqueador), abre un correo a info@ con el alta. */
 (function () {
+  var MC = 'https://regeneradeia.us6.list-manage.com/subscribe/post?u=0d27a81b0247a735d283f95a2&id=67850fde18';
   var ca = document.documentElement.lang === 'ca';
+  var T = ca ? {
+    invalid: 'Escriu una adreça electrònica vàlida.',
+    sending: 'Enviant…',
+    confirm: 'Gràcies! Revisa el correu per confirmar l\'alta.',
+    done: 'Gràcies! Ja reps el butlletí.',
+    already: 'Aquest correu ja està subscrit al butlletí.',
+    error: 'No s\'ha pogut fer l\'alta. Torna-ho a provar o escriu a info@regeneradeia.com.',
+    mailSubject: 'Alta al butlletí de Regenera Deià',
+    mailBody: 'Vull rebre el butlletí de Regenera Deià a: '
+  } : {
+    invalid: 'Please enter a valid email address.',
+    sending: 'Sending…',
+    confirm: 'Thank you! Check your inbox to confirm your subscription.',
+    done: 'Thank you! You are now subscribed.',
+    already: 'This email is already subscribed to the newsletter.',
+    error: 'We could not subscribe you. Please try again or write to info@regeneradeia.com.',
+    mailSubject: 'Newsletter sign-up — Regenera Deià',
+    mailBody: 'Please add me to the Regenera Deià newsletter: '
+  };
+  var n = 0;
+
+  function jsonp(url, ok, fail) {
+    var cb = '__rdmc' + (++n), s = document.createElement('script'), t;
+    function clean() { clearTimeout(t); delete window[cb]; s.remove(); }
+    window[cb] = function (r) { clean(); ok(r); };
+    s.onerror = function () { clean(); fail(); };
+    t = setTimeout(function () { clean(); fail(); }, 12000);
+    s.src = url + '&c=' + cb;
+    document.head.appendChild(s);
+  }
+
   document.querySelectorAll('form').forEach(function (form) {
     var email = form.querySelector('input[name="Email"],input[type="email"]');
     if (!email) return;
+    // el texto de debajo del campo («Your information is never disclosed…») hace de mensaje de estado
+    var wrap = form.closest('[data-framer-name="Form Container"]') || form.parentElement;
+    var note = [].slice.call(wrap.querySelectorAll('p')).filter(function (p) { return !form.contains(p) && /third parties|tercers/i.test(p.textContent); })[0];
+    var noteText = note && note.textContent;
+    function say(msg) { if (note) note.textContent = msg || noteText; }
+    var busy = false;
     form.setAttribute('novalidate', '');
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (busy) return;
       var v = email.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
         email.focus();
-        email.setCustomValidity(ca ? 'Escriu una adreça electrònica vàlida.' : 'Please enter a valid email address.');
+        email.setCustomValidity(T.invalid);
         email.reportValidity();
         return;
       }
       email.setCustomValidity('');
-      var subject = ca ? 'Alta al butlletí de Regenera Deià' : 'Newsletter sign-up — Regenera Deià';
-      var body = (ca ? 'Vull rebre el butlletí de Regenera Deià a: ' : 'Please add me to the Regenera Deià newsletter: ') + v;
-      location.href = 'mailto:info@regeneradeia.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-      email.value = '';
-      email.placeholder = ca ? 'Gràcies! Envia el correu per confirmar-ho.' : 'Thank you! Send the email to confirm.';
+      busy = true;
+      say(T.sending);
+      // b_…: camp parany de Mailchimp contra bots, ha d'anar buit
+      jsonp(MC + '&EMAIL=' + encodeURIComponent(v) + '&b_0d27a81b0247a735d283f95a2_67850fde18=', function (r) {
+        busy = false;
+        var msg = (r && r.msg) || '';
+        if (/already subscribed/i.test(msg)) {            // Mailchimp lo da como éxito o como error
+          email.value = '';
+          say(T.already);
+        } else if (r && r.result === 'success') {
+          email.value = '';
+          say(/confirm/i.test(msg) ? T.confirm : T.done);
+        } else {
+          say(T.error);
+        }
+      }, function () {
+        busy = false;
+        say(noteText);
+        location.href = 'mailto:info@regeneradeia.com?subject=' + encodeURIComponent(T.mailSubject) + '&body=' + encodeURIComponent(T.mailBody + v);
+      });
     });
     email.addEventListener('input', function () { email.setCustomValidity(''); });
   });
